@@ -5,7 +5,7 @@ TodoMVC.module('Layout', function (Layout, App, Backbone) {
 	// Layout Header View
 	// ------------------
 	Layout.Header = Backbone.Marionette.ItemView.extend({
-		template: '#template-header',
+		template: 'header',
 
 		// UI bindings create cached attributes that
 		// point to jQuery selected objects
@@ -33,7 +33,7 @@ TodoMVC.module('Layout', function (Layout, App, Backbone) {
 	// Layout Footer View
 	// ------------------
 	Layout.Footer = Backbone.Marionette.Layout.extend({
-		template: '#template-footer',
+		template: 'footer',
 
 		// UI bindings create cached attributes that
 		// point to jQuery selected objects
