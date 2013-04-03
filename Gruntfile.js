@@ -9,15 +9,31 @@ var folderMount = function folderMount(connect, point) {
 module.exports = function(grunt) {
   
   grunt.initConfig({
+    
+    pkg: grunt.file.readJSON('package.json'),
 
-    applicationFiles: [
-      "js/TodoMVC.js",
-      "js/TodoMVC.Todos.js",
-      "js/TodoMVC.Layout.js",
-      "js/TodoMVC.TodoList.Views.js",
-      "js/TodoMVC.TodoList.js"
-    ],
+    config: {
+      outputDir: 'dist/debug',
 
+      applicationFiles: [
+        "js/TodoMVC.js",
+        "js/TodoMVC.Todos.js",
+        "js/TodoMVC.Layout.js",
+        "js/TodoMVC.TodoList.Views.js",
+        "js/TodoMVC.TodoList.js"
+      ],
+     
+      vendor: [
+        "components/todomvc-common/base.js",
+        "components/jquery/jquery.js",
+        "components/underscore/underscore.js",
+        "components/backbone/backbone.js",
+        "components/backbone.localStorage/backbone.localStorage.js",
+        "components/backbone.marionette/lib/backbone.marionette.js"
+      ]
+    },
+
+   
     jshint: {
       options: {
         globalstrict: true,
@@ -25,19 +41,13 @@ module.exports = function(grunt) {
           'JST': true
         }
       },
-      dist: [
-        "js/TodoMVC.js",
-        "js/TodoMVC.Todos.js",
-        "js/TodoMVC.Layout.js",
-        "js/TodoMVC.TodoList.Views.js",
-        "js/TodoMVC.TodoList.js"
-      ]
+      dist: '<%= config.applicationFiles %>'
     },
 
     stylus: {
       dist: {
         files: {
-          "dist/debug/css/app.css": [ "styles/base.styl", "styles/app.styl" ]
+          "<%= config.outputDir %>/css/app.css": [ "styles/base.styl", "styles/app.styl" ]
         }
       }
     },
@@ -45,7 +55,7 @@ module.exports = function(grunt) {
     jst: {
       dist: {
         files: {
-          "dist/debug/js/templates.js": [ "templates/**/*" ]
+          "<%= config.outputDir %>/js/templates.js": [ "templates/**/*" ]
         }
       }
     },
@@ -53,25 +63,16 @@ module.exports = function(grunt) {
     concat: {
       dist: {
         files: {
-          "dist/debug/js/app.js": [
+          "<%= config.outputDir %>/js/app.js": [
 
             // Vendor libraries
-            "components/todomvc-common/base.js",
-            "components/jquery/jquery.js",
-            "components/underscore/underscore.js",
-            "components/backbone/backbone.js",
-            "components/backbone.localStorage/backbone.localStorage.js",
-            "components/backbone.marionette/lib/backbone.marionette.js",
+            '<%= config.vendor %>',
 
             // Templates
-            "dist/debug/js/templates.js",
+            "<%= config.outputDir %>/js/templates.js",
             
             // Application
-            "js/TodoMVC.js",
-            "js/TodoMVC.Todos.js",
-            "js/TodoMVC.Layout.js",
-            "js/TodoMVC.TodoList.Views.js",
-            "js/TodoMVC.TodoList.js"
+            '<%= config.applicationFiles %>'
           ]
         }
       }
@@ -80,7 +81,7 @@ module.exports = function(grunt) {
     jade: {
       dist: {
         files: {
-          "dist/debug/index.html": [ "index.jade" ]
+          "<%= config.outputDir %>/index.html": [ "index.jade" ]
         }
       }
     },
@@ -88,22 +89,33 @@ module.exports = function(grunt) {
     copy: {
       bgImage: {
         files: [
-          { expand: true, cwd: 'components/todomvc-common', src: [ '*.png' ], dest: 'dist/debug/images/' }
+          { expand: true, cwd: 'components/todomvc-common', src: [ '*.png' ], dest: '<%= config.outputDir %>/images/' }
         ]
+      }
+    },
+
+    uglify: {
+      options: {
+        banner: '/*! <%= pkg.name %> <%= pkg.version %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
+      },
+      dist: {
+        files: {
+          '<%= config.outputDir %>/js/app.js': ['<%= config.outputDir %>/js/app.js']
+        }
       }
     },
 
     clean: {
       beforeBuild: {
-        src: [ 'dist/debug' ]
+        src: [ '<%= config.outputDir %>' ]
       },
       afterBuild: {
-        src: [ 'dist/debug/js/templates.js' ]
+        src: [ '<%= config.outputDir %>/js/templates.js' ]
       }
     },
 
     jasmine: {
-      src: 'dist/debug/app.js',
+      src: '<%= config.outputDir %>/app.js',
       options: {
         specs: 'specs/spec/**/*.js'
       }
@@ -126,7 +138,7 @@ module.exports = function(grunt) {
     connect: {
       livereload: {
         options: {
-          base: 'dist/debug',
+          base: '<%= config.outputDir %>',
           port: 9001,
           middleware: function(connect, options) {
             return [ lrSnippet, folderMount(connect, options.base) ];
@@ -168,6 +180,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('default', [ 'build' ]);
+  grunt.registerTask('release', [ 'build', 'uglify' ]);
 
   grunt.registerTask('reload', [ 'build', 'livereload' ]);
 
